@@ -103,9 +103,9 @@ for (fasta_file in fasta_files) {
   taxa_in_tree_not_alignment <- setdiff(tree_taxa, alignment_taxa)
   
   if (length(taxa_in_alignment_not_tree) == 0 && length(taxa_in_tree_not_alignment) == 0) {
-    cat("✅", locus_name, "- Taxa match perfectly.\n")
+    cat(locus_name, "- Taxa match perfectly.\n")
   } else {
-    cat("❌", locus_name, "- Taxa mismatch detected.\n")
+    cat(locus_name, "- Taxa mismatch detected.\n")
     verification_log[[locus_name]] <- list(
       alignment_not_in_tree = taxa_in_alignment_not_tree,
       tree_not_in_alignment = taxa_in_tree_not_alignment
@@ -177,7 +177,7 @@ for (tree_file in tree_files) {
   output_path <- file.path(output_dir, basename(tree_file))
   writeLines(tree_text, output_path)
   
-  cat("✅ Processed tree saved:", output_path, "\n")
+  cat("Processed tree saved:", output_path, "\n")
 }
 
 #----------------------------------------------------------------------
@@ -206,14 +206,14 @@ for aln in codon_aligned/*.fasta; do
 
     # Check if both alignment and tree exist
     if [[ -f "$tree" ]]; then
-        echo "🧪 Running RELAX for $base"
+        echo "Running RELAX for $base"
         hyphy relax \
             --alignment "$aln" \
             --tree "$tree" \
             --output "$out" \
             --branches "Test"  # Will use {myco} annotation for test branches
     else
-        echo "⚠️  Tree not found for $base — skipping"
+        echo "⚠Tree not found for $base — skipping"
     fi
 done
 
@@ -276,7 +276,7 @@ for aln in codon_aligned/*.fasta; do
     out="relax_ceph_output/${base}_RELAX.json"
 
     if [[ -f "$tree" ]]; then
-        echo "🧪 Running RELAX for $base"
+        echo "Running RELAX for $base"
 
         OMP_NUM_THREADS=32 hyphy relax \
             --alignment "$aln" \
@@ -397,7 +397,7 @@ for aln in codon_aligned_noMH/*.fasta; do
     out="relax_ceph_output_noMH/${base}_RELAX.json"
 
     if [[ -f "$tree" ]]; then
-        echo "🧪 Running RELAX for $base"
+        echo "Running RELAX for $base"
 
         OMP_NUM_THREADS=32 hyphy relax \
             --alignment "$aln" \
@@ -407,7 +407,7 @@ for aln in codon_aligned_noMH/*.fasta; do
             --test myco
 
     else
-        echo "⚠️  Tree not found for $base — skipping"
+        echo "Tree not found for $base — skipping"
     fi
 done
 
