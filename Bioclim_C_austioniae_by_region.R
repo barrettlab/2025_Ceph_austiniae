@@ -38,8 +38,40 @@ occ_sf <- st_as_sf(occ_df, coords = c("decimalLongitude", "decimalLatitude"), cr
 
 # ---- 4. Download WorldClim bioclim data ----
 wc_all <- geodata::worldclim_global(var = "bio", res = 10, path = tempdir())
-bioclim_vars <- c(1, 2, 7, 12, 15)
-wc <- wc_all[[bioclim_vars]]
+
+# ---- 4b. Select 5 uncorrelated bioclim variables ----
+# Extract all 19 BIO variables temporarily
+wc19 <- wc_all
+
+# Extract raster values at occurrence points
+bio19_vals <- terra::extract(wc19, vect(occ_sf))
+
+# Remove non-BIO columns & rows with missing data
+bio_only <- bio19_vals[, grep("^bio", names(bio19_vals), ignore.case = TRUE)]
+bio_only <- bio_only[complete.cases(bio_only), ]
+
+# Compute correlation matrix
+cor_mat <- cor(bio_only, use = "pairwise.complete.obs")
+
+# Identify and remove highly correlated variables
+# (change cutoff from 0.7 → 0.8 or 0.9 depending on your needs)
+library(caret)
+high_corr <- findCorrelation(cor_mat, cutoff = 0.70, exact = TRUE)
+
+# Variables to keep
+vars_keep <- names(bio_only)[-high_corr]
+
+# If more than 5 remain, keep the first 5 for PCA
+vars_final <- vars_keep[1:5]
+
+cat("Selected variables with low correlation:\n")
+print(vars_final)
+
+# Subset the WC stack to selected variables
+wc <- wc19[[vars_final]]
+names(wc) <- toupper(vars_final)   # Make names BIO1, BIO2, etc.
+
+
 names(wc) <- paste0("BIO", bioclim_vars)
 
 # ---- 5. Extract bioclim values at occurrence points ----
@@ -137,4 +169,5 @@ ggplot(scores, aes(x = PC1, y = PC2, color = Subregion)) +
     scale_fill_brewer(palette = "Dark2") +
     labs(title = "PCA of Bioclim Variables for Cephalanthera austiniae",
          x = paste0("PC1 (", round(summary(pca_res)$importance[2,1] * 100, 1), "%)"),
+
          y = paste0("PC2 (", round(summary(pca_res)$importance[2,2] * 100, 1), "%)")) 
